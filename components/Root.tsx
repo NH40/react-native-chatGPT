@@ -16,7 +16,11 @@ const RootComponent = React.memo((props: any) => {
 			/>
 
 			<Stack.Navigator>
-				<Stack.Screen name='Home' component={Home} />
+				<Stack.Screen
+					name='Home'
+					component={Home}
+					options={{ headerShown: false }}
+				/>
 				{/* <Stack.Screen name='Notifications' component={} />
 				<Stack.Screen name='Profile' component={} />
 				<Stack.Screen name='Setting' component={} /> */}
