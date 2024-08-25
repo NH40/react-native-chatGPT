@@ -448,6 +448,21 @@ export default {
 			)}
 		</View>
 	),
+	OpenAIIconChat: ({
+		mode,
+		style,
+	}: {
+		style?: ViewStyle
+		mode?: TColorMode
+	}) => (
+		<View style={[{ width: 15, height: 15 }, style]}>
+			{(mode ?? store.getState().main.app_mode) != 'dark' ? (
+				<OpenAIWhite />
+			) : (
+				<OpenAI />
+			)}
+		</View>
+	),
 	ExpandIcon: ({
 		style,
 		onPress,

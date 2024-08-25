@@ -2,6 +2,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 import { StatusBar, useColorScheme } from 'react-native'
 import { Home } from './routes/Home'
+import SettingsRoute from './routes/Settings'
 
 const Stack = createStackNavigator()
 
@@ -10,10 +11,7 @@ const RootComponent = React.memo((props: any) => {
 
 	return (
 		<>
-			<StatusBar
-				barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-				// backgroundColor={backgroundStyle.backgroundColor}
-			/>
+			<StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
 			<Stack.Navigator>
 				<Stack.Screen
@@ -21,9 +19,14 @@ const RootComponent = React.memo((props: any) => {
 					component={Home}
 					options={{ headerShown: false }}
 				/>
-				{/* <Stack.Screen name='Notifications' component={} />
-				<Stack.Screen name='Profile' component={} />
-				<Stack.Screen name='Setting' component={} /> */}
+				<Stack.Screen
+					name='Настройки'
+					options={{
+						presentation: 'modal',
+						headerShadowVisible: false,
+					}}
+					component={SettingsRoute}
+				/>
 			</Stack.Navigator>
 		</>
 	)
