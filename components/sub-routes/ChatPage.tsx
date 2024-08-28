@@ -1,12 +1,42 @@
 import React from 'react'
 import { SafeAreaView, StyleSheet, TextInput, View } from 'react-native'
+import { make_request } from '../../assets/constants'
 import Icons from '../../assets/icons'
+import { useAppDispatch, useAppSelector } from '../../shared/hooks'
+import { updateMessages } from '../../shared/rdx-slice'
+import { MessageBox } from '../../shared/reusables'
+import { TMessage } from '../../shared/types'
 import useAppColor from '../../themed/appColor'
+import CustomView from '../../themed/CustomView'
 
 const ChatPage = React.memo((props: any) => {
 	const appColor = useAppColor()
+	const dispatch = useAppDispatch()
+	const conversation = useAppSelector(state => state.main.messages)
+	const [prompt, setPrompt] = React.useState<string>('')
 	const [mainIconsHidden, setMainIconsHidden] = React.useState<boolean>(false)
 	const [showExpandBtn, setShowExpandBtn] = React.useState<boolean>(false)
+
+	const handleSubmitPrompt = React.useCallback(() => {
+		if (prompt.length === 0) return
+		const message: TMessage = {
+			content: prompt,
+			sender: 'user',
+		}
+		dispatch(updateMessages(message))
+		handlePromptChatGPT(prompt)
+		setPrompt('')
+	}, [prompt])
+
+	const handlePromptChatGPT = React.useCallback(async (prompt: string) => {
+		const response = await make_request(prompt)
+		if (response == undefined) return console.log('error response')
+		const message: TMessage = {
+			content: response,
+			sender: 'system',
+		}
+		dispatch(updateMessages(message))
+	}, [])
 
 	const handleInputLayout = React.useCallback((event: any) => {
 		const { height } = event.nativeEvent.layout
@@ -20,25 +50,34 @@ const ChatPage = React.memo((props: any) => {
 	return (
 		<SafeAreaView style={{ backgroundColor: appColor.main_bg }}>
 			<View style={{ height: '100%', width: '100%', paddingTop: 10 }}>
-				{/* <View style={{ flex: 1, flexShrink: 0, backgroundColor: 'green' }}>
-					<CustomView style={{ paddingHorizontal: 20 }}>
-						<View></View>
-					</CustomView>
-				</View> */}
-
-				<View
-					style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-				>
-					<View
-						style={{
-							borderRadius: 50,
-							padding: 10,
-							backgroundColor: appColor.bold_text,
-						}}
-					>
-						<Icons.OpenAIIconChat style={{ width: 40, height: 40 }} />
+				{conversation.length > 0 ? (
+					<View style={{ flex: 1, flexShrink: 0, backgroundColor: 'green' }}>
+						<CustomView style={{ paddingHorizontal: 20 }}>
+							{conversation.map(message => (
+								<MessageBox
+									message={message.content}
+									sender={message.sender}
+									key={Math.random()}
+								/>
+							))}
+						</CustomView>
 					</View>
-				</View>
+				) : (
+					<View
+						style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+					>
+						<View
+							style={{
+								borderRadius: 50,
+								padding: 10,
+								backgroundColor: appColor.bold_text,
+							}}
+						>
+							<Icons.OpenAIIcon mode='dark' style={{ width: 40, height: 40 }} />
+						</View>
+					</View>
+				)}
+
 				<View style={[styles.text_box_container, { paddingTop: 10 }]}>
 					<View
 						style={{
@@ -85,7 +124,6 @@ const ChatPage = React.memo((props: any) => {
 					>
 						<TextInput
 							multiline
-							onLayout={handleInputLayout}
 							style={[
 								styles.text_input,
 								{
@@ -94,14 +132,17 @@ const ChatPage = React.memo((props: any) => {
 									color: appColor.inverseWhiteBlack,
 								},
 							]}
-							placeholder='Message'
+							placeholder='Сообщение'
+							defaultValue={prompt}
 							placeholderTextColor={appColor.line_color}
+							onLayout={handleInputLayout}
 							onChangeText={text => {
 								if (text.length > 0) {
 									setMainIconsHidden(true)
 								} else {
 									setMainIconsHidden(false)
 								}
+								setPrompt(text)
 							}}
 						/>
 
@@ -118,7 +159,10 @@ const ChatPage = React.memo((props: any) => {
 					</View>
 					<View style={{ flexShrink: 1, marginLeft: 20, marginBottom: 8 }}>
 						{mainIconsHidden ? (
-							<Icons.ArrowUpIcon style={{ width: 25, height: 25 }} />
+							<Icons.ArrowUpIcon
+								style={{ width: 25, height: 25 }}
+								onPress={handleSubmitPrompt}
+							/>
 						) : (
 							<Icons.HeadsetIcon style={{ width: 25, height: 25 }} />
 						)}

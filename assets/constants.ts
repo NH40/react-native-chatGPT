@@ -1,41 +1,22 @@
-import axios from 'axios';
-import {GOOGLE_GEMINI_API_KEY} from './secret';
+import OpenAI from 'openai'
 
-const gemini_endpoint =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=';
-export const APP_COLOR_MODE_KEY = 'app-color-mode';
-const instance = axios.create({
-  baseURL: gemini_endpoint + GOOGLE_GEMINI_API_KEY,
-  timeout: 20000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const openai = new OpenAI({
+	baseURL: 'https://api.deepseek.com',
+	apiKey: 'sk-5b3523699b084de1a4b51400637027cf',
+})
 
 export const make_request = async (prompt: string) => {
-  return await instance
-    .post('', {
-      contents: [
-        {
-          parts: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ],
-    })
-    .then(function (response) {
-      const generated_response =
-        response.data.candidates[0].content.parts[0].text;
-      console.log(
-        'gemini response',
-        response.data.candidates[0].content.parts[0].text,
-      );
-      return generated_response;
-    })
-    .catch(function (error: any) {
-      console.log('gemini error', error);
-      return undefined;
-    });
-};
+	const completion = await openai.chat.completions
+		.create({
+			messages: [{ role: 'system', content: prompt }],
+			model: 'deepseek-chat',
+		})
+		.catch(function (error: any) {
+			console.log('gemini error', error)
+			return undefined
+		})
+
+	const generated_response = completion?.choices[0].message.content
+	console.log('gemini response', completion?.choices[0].message.content)
+	return generated_response
+}
